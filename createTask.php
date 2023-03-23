@@ -35,7 +35,7 @@ elseif (
     $fields = ['fields' => ['task']];
     $returnData = msg(0, 422, 'Please Fill in all Required Fields!', $fields);
 
-// IF THERE ARE NO EMPTY FIELDS THEN-
+
 else :
 
     $task = trim($data->task);

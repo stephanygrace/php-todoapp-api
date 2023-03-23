@@ -1,7 +1,7 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: access");
-header("Access-Control-Allow-Methods: GET");
+header("Access-Control-Allow-Methods: DELETE");
 header("Content-Type: application/json; charset=UTF-8");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
@@ -20,51 +20,31 @@ function msg($success, $status, $message, $extra = [])
     ], $extra);
 }
 
-// DATA FORM REQUEST
-$data = json_decode(file_get_contents("php://input"));
+// GET TASK ID FROM URL PARAMS
+$id = isset($_GET['id']) ? $_GET['id'] : '';
+
 $returnData = [];
 
-
-if ($_SERVER["REQUEST_METHOD"] != "POST") :
-
+if ($_SERVER["REQUEST_METHOD"] != "DELETE") {
     $returnData = msg(0, 404, 'Page Not Found!');
-
-elseif (
-    !isset($data->task)
-    || !isset($data->id)
-    || empty(trim($data->task))
-    || empty(trim($data->id))
-    
-) :
-
-    $fields = ['fields' => ['id','task']];
-    $returnData = msg(0, 422, 'Please Fill in all Required Fields!', $fields);
-
-// IF THERE ARE NO EMPTY FIELDS THEN-
-else :
-
-    $task = trim($data->task);
-    $id = trim($data->id);
- 
-    echo $id;
-        try {
-            
-                $delete_query = "DELETE FROM `tasks` WHERE id = :id";
-
-                $stmt = $conn->prepare($delete_query);
-
-                // DATA BINDING
-                $stmt->bindValue(':task', $task, PDO::PARAM_STR);
-                $stmt->bindValue(':id', $id, PDO::PARAM_STR);
-
-                $stmt->execute();
-
-                $returnData = msg(1, 201, 'Task updated.');
-
-        } catch (PDOException $e) {
-            $returnData = msg(0, 500, $e->getMessage());
+} elseif (empty(trim($id))) {
+    $fields = ['fields' => ['id']];
+    $returnData = msg(0, 422, 'Please provide a task id to delete!', $fields);
+} else {
+    try {
+        $delete_query = "DELETE FROM `tasks` WHERE id = :id";
+        $stmt = $conn->prepare($delete_query);
+        // DATA BINDING
+        $stmt->bindValue(':id', $id, PDO::PARAM_STR);
+        $stmt->execute();
+        if ($stmt->rowCount() > 0) {
+            $returnData = msg(1, 200, 'Task deleted.');
+        } else {
+            $returnData = msg(0, 404, 'Task not found.');
         }
-    endif;
-
+    } catch (PDOException $e) {
+        $returnData = msg(0, 500, $e->getMessage());
+    }
+}
 
 echo json_encode($returnData);

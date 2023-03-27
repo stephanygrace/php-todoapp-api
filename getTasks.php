@@ -10,32 +10,30 @@ require __DIR__.'/classes/Database.php';
 $allHeaders = getallheaders();
 $db_connection = new Database();
 $conn = $db_connection->dbConnection();
+$auth = new Auth($conn, $allHeaders);
 
-try {
-     
-    $get_query = "SELECT * FROM `tasks`";
-    $stmt = $conn->prepare($get_query);
-    $stmt->execute();
+echo json_encode($auth->isValid());
 
-    $tasks_arr = array();
-   
-    while($row = $stmt->fetch(PDO::FETCH_ASSOC))
-    {
-        $id = $row['id'];        
-        $task = $row['task'];        
-     
-           
 
-        $tasks_arr[] = array(
-            "id" => $id,
-            "task" => $task
-           
-        );
-    }
-    $json_string = json_encode($tasks_arr);
-    echo $json_string;
 
-} catch (PDOException $e) {
-    $returnData = msg(0, 500, $e->getMessage());
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
